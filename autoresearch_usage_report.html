@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>autoresearch 使用报告</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #627184;
+      --line: #d8e1e8;
+      --paper: #ffffff;
+      --wash: #f4f7f9;
+      --accent: #0f766e;
+      --violet: #7c3aed;
+      --orange: #d97706;
+      --deep: #243447;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #eef3f6;
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+      line-height: 1.72;
+    }
+    header {
+      color: #fff;
+      background: linear-gradient(135deg, #243447 0%, #0f766e 100%);
+      padding: 46px 24px 34px;
+    }
+    main, .inner, footer { max-width: 1220px; margin: 0 auto; }
+    main { padding: 22px 24px 34px; }
+    section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      margin: 16px 0;
+      box-shadow: 0 12px 28px rgba(36,52,71,.06);
+    }
+    h1 { margin: 0 0 10px; font-size: 2.6rem; line-height: 1.12; }
+    h2 { margin: 0 0 14px; border-left: 5px solid var(--accent); padding-left: 12px; }
+    h3 { margin: 18px 0 10px; }
+    h4 { margin: 16px 0 8px; color: #22364a; }
+    p { margin: 0 0 11px; }
+    code, pre { font-family: Consolas, Monaco, "Courier New", monospace; }
+    pre {
+      margin: 12px 0;
+      padding: 14px;
+      overflow: auto;
+      border-radius: 8px;
+      color: #eaf4f4;
+      background: #111827;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .93rem; }
+    th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #eaf1f4; }
+    svg { width: 100%; height: auto; display: block; }
+    .lede { max-width: 920px; color: rgba(255,255,255,.86); font-size: 1.04rem; }
+    .header-tags { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+    .header-tags span { border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.13); border-radius: 999px; padding: 5px 12px; font-size: .92rem; }
+    .small { color: var(--muted); font-size: .92rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .note { border-left: 5px solid var(--accent); background: #edf8f6; padding: 12px 14px; border-radius: 8px; }
+    .warn { border-left-color: var(--orange); background: #fff7ed; }
+    .chart { background: #f9fbfc; border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin: 12px 0; }
+    .scroll-table { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .scroll-table table { min-width: 1120px; margin: 0; }
+    .vertical-scroll { max-height: 520px; overflow: auto; }
+    .phase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 14px 0; }
+    .phase-card { border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: linear-gradient(180deg, #ffffff, #f7fafb); }
+    .phase-card b { display: block; color: var(--deep); margin-bottom: 4px; }
+    .phase-card strong { display: block; color: var(--accent); font-size: 1.28rem; }
+    .metric-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 12px 0; }
+    .metric { background: #f7fafb; border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+    .metric strong { display: block; font-size: 1.45rem; color: var(--accent); }
+    .program { max-height: 720px; overflow: auto; background: #fbfcfd; border: 1px solid var(--line); padding: 14px; border-radius: 8px; }
+    .raw-program { max-height: 620px; }
+    .bullet { padding-left: 18px; position: relative; }
+    .bullet::before { content: "•"; position: absolute; left: 2px; color: var(--accent); }
+    footer { color: var(--muted); padding: 0 24px 36px; }
+    @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 2rem; } main { padding: 14px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="inner">
+      <h1>autoresearch 使用报告</h1>
+      <p class="lede">本报告只基于 <code>autoresearch_local-master</code> 文件夹生成，覆盖项目总体情况、<code>program.md</code> 的嵌入与解读，以及你这次 PitNextLap 案例中模型逐轮探索更优解的过程。HTML 内部包含全部文本与图表，不依赖外部 CSS、JS、图片或数据文件。</p>
+      <div class="header-tags">
+        <span>自包含 HTML</span>
+        <span>嵌入 program.md</span>
+        <span>复盘实验日志</span>
+        <span>可视化探索路径</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>1. 项目总体情况</h2>
+      <p><strong>autoresearch</strong> 的核心思想是把“研究过程”变成一个可循环执行的实验系统：读取任务说明，围绕一个可修改文件提出单次实验，运行训练，记录指标，再根据结果保留或丢弃该思路。原始项目面向 LLM 训练实验，本地这个文件夹已经被改造成一个 CSV 建模案例：预测赛车记录下一圈是否进站，目标列为 <code>PitNextLap</code>，评估主指标为 AUC。</p>
+      <div>
+          <h3>关键文件</h3>
+          <table>
+            <tr><th>文件</th><th>角色</th></tr>
+            <tr><td><code>program.md</code></td><td><strong>项目核心文件</strong>，定义 autoresearch 的自治实验流程：怎么初始化、怎么实验、怎么记录、怎么保留结果。</td></tr>
+            <tr><td><code>results.tsv</code></td><td>每轮实验的结构化日志，是复盘模型探索路线的核心依据。</td></tr>
+          </table>
+        </div>
+    </section>
+
+    <section>
+      <h2>2. program.md 原文嵌入</h2>
+      <p>下面是 <code>program.md</code> 的 HTML 内嵌版本。它已经写入本报告文件，不需要再读取外部 Markdown。</p>
+      <div class="program"><h3>autoresearch</h3>
+<p>This is an experiment to have the LLM do its own research.</p>
+<h4>Setup</h4>
+<p>To set up a new experiment, work with the user to:</p>
+<p class="bullet">1. **Agree on a run tag**: propose a tag based on today&#x27;s date (e.g. `mar5`). The branch `autoresearch/&lt;tag&gt;` must not already exist — this is a fresh run.</p>
+<p class="bullet">2. **Create the branch**: `git checkout -b autoresearch/&lt;tag&gt;` from current master.</p>
+<p class="bullet">3. **Read the in-scope files**: The repo is small. Read these files for full context:</p>
+<p>   - `README.md` — repository context.</p>
+<p>   - `prepare.py` — fixed constants, data prep, tokenizer, dataloader, evaluation. Do not modify.</p>
+<p>   - `train.py` — the file you modify. Model architecture, optimizer, training loop.</p>
+<p class="bullet">4. **Verify data exists**: Check that `~/.cache/autoresearch/` contains data shards and a tokenizer. If not, tell the human to run `uv run prepare.py`.</p>
+<p class="bullet">5. **Initialize results.tsv**: Create `results.tsv` with just the header row. The baseline will be recorded after the first run.</p>
+<p class="bullet">6. **Confirm and go**: Confirm setup looks good.</p>
+<p>Once you get confirmation, kick off the experimentation.</p>
+<h4>Experimentation</h4>
+<p>Each experiment runs on a single GPU. The training script runs for a **fixed time budget of 5 minutes** (wall clock training time, excluding startup/compilation). You launch it simply as: `uv run train.py`.</p>
+<p>**What you CAN do:**</p>
+<p class="bullet">Modify `train.py` — this is the only file you edit. Everything is fair game: model architecture, optimizer, hyperparameters, training loop, batch size, model size, etc.</p>
+<p>**What you CANNOT do:**</p>
+<p class="bullet">Modify `prepare.py`. It is read-only. It contains the fixed evaluation, data loading, tokenizer, and training constants (time budget, sequence length, etc).</p>
+<p class="bullet">Install new packages or add dependencies. You can only use what&#x27;s already in `pyproject.toml`.</p>
+<p class="bullet">Modify the evaluation harness. The `evaluate_bpb` function in `prepare.py` is the ground truth metric.</p>
+<p>**The goal is simple: get the lowest val_bpb.** Since the time budget is fixed, you don&#x27;t need to worry about training time — it&#x27;s always 5 minutes. Everything is fair game: change the architecture, the optimizer, the hyperparameters, the batch size, the model size. The only constraint is that the code runs without crashing and finishes within the time budget.</p>
+<p>**VRAM** is a soft constraint. Some increase is acceptable for meaningful val_bpb gains, but it should not blow up dramatically.</p>
+<p>**Simplicity criterion**: All else being equal, simpler is better. A small improvement that adds ugly complexity is not worth it. Conversely, removing something and getting equal or better results is a great outcome — that&#x27;s a simplification win. When evaluating whether to keep a change, weigh the complexity cost against the improvement magnitude. A 0.001 val_bpb improvement that adds 20 lines of hacky code? Probably not worth it. A 0.001 val_bpb improvement from deleting code? Definitely keep. An improvement of ~0 but much simpler code? Keep.</p>
+<p>**The first run**: Your very first run should always be to establish the baseline, so you will run the training script as is.</p>
+<h4>Output format</h4>
+<p>Once the script finishes it prints a summary like this:</p>
+<pre><code>
+---
+val_bpb:          0.997900
+training_seconds: 300.1
+total_seconds:    325.9
+peak_vram_mb:     45060.2
+mfu_percent:      39.80
+total_tokens_M:   499.6
+num_steps:        953
+num_params_M:     50.3
+depth:            8
+</code></pre>
+<p>Note that the script is configured to always stop after 5 minutes, so depending on the computing platform of this computer the numbers might look different. You can extract the key metric from the log file:</p>
+<pre><code>
+grep &quot;^val_bpb:&quot; run.log
+</code></pre>
+<h4>Logging results</h4>
+<p>When an experiment is done, log it to `results.tsv` (tab-separated, NOT comma-separated — commas break in descriptions).</p>
+<p>The TSV has a header row and 5 columns:</p>
+<pre><code>
+commit	val_bpb	memory_gb	status	description
+</code></pre>
+<p class="bullet">1. git commit hash (short, 7 chars)</p>
+<p class="bullet">2. val_bpb achieved (e.g. 1.234567) — use 0.000000 for crashes</p>
+<p class="bullet">3. peak memory in GB, round to .1f (e.g. 12.3 — divide peak_vram_mb by 1024) — use 0.0 for crashes</p>
+<p class="bullet">4. status: `keep`, `discard`, or `crash`</p>
+<p class="bullet">5. short text description of what this experiment tried</p>
+<p>Example:</p>
+<pre><code>
+commit	val_bpb	memory_gb	status	description
+a1b2c3d	0.997900	44.0	keep	baseline
+b2c3d4e	0.993200	44.2	keep	increase LR to 0.04
+c3d4e5f	1.005000	44.0	discard	switch to GeLU activation
+d4e5f6g	0.000000	0.0	crash	double model width (OOM)
+</code></pre>
+<h4>The experiment loop</h4>
+<p>The experiment runs on a dedicated branch (e.g. `autoresearch/mar5` or `autoresearch/mar5-gpu0`).</p>
+<p>LOOP FOREVER:</p>
+<p class="bullet">1. Look at the git state: the current branch/commit we&#x27;re on</p>
+<p class="bullet">2. Tune `train.py` with an experimental idea by directly hacking the code.</p>
+<p class="bullet">3. git commit</p>
+<p class="bullet">4. Run the experiment: `uv run train.py &gt; run.log 2&gt;&amp;1` (redirect everything — do NOT use tee or let output flood your context)</p>
+<p class="bullet">5. Read out the results: `grep &quot;^val_bpb:\|^peak_vram_mb:&quot; run.log`</p>
+<p class="bullet">6. If the grep output is empty, the run crashed. Run `tail -n 50 run.log` to read the Python stack trace and attempt a fix. If you can&#x27;t get things to work after more than a few attempts, give up.</p>
+<p class="bullet">7. Record the results in the tsv (NOTE: do not commit the results.tsv file, leave it untracked by git)</p>
+<p class="bullet">8. If val_bpb improved (lower), you &quot;advance&quot; the branch, keeping the git commit</p>
+<p class="bullet">9. If val_bpb is equal or worse, you git reset back to where you started</p>
+<p>The idea is that you are a completely autonomous researcher trying things out. If they work, keep. If they don&#x27;t, discard. And you&#x27;re advancing the branch so that you can iterate. If you feel like you&#x27;re getting stuck in some way, you can rewind but you should probably do this very very sparingly (if ever).</p>
+<p>**Timeout**: Each experiment should take ~5 minutes total (+ a few seconds for startup and eval overhead). If a run exceeds 10 minutes, kill it and treat it as a failure (discard and revert).</p>
+<p>**Crashes**: If a run crashes (OOM, or a bug, or etc.), use your judgment: If it&#x27;s something dumb and easy to fix (e.g. a typo, a missing import), fix it and re-run. If the idea itself is fundamentally broken, just skip it, log &quot;crash&quot; as the status in the tsv, and move on.</p>
+<p>**NEVER STOP**: Once the experiment loop has begun (after the initial setup), do NOT pause to ask the human if you should continue. Do NOT ask &quot;should I keep going?&quot; or &quot;is this a good stopping point?&quot;. The human might be asleep, or gone from a computer and expects you to continue working *indefinitely* until you are manually stopped. You are autonomous. If you run out of ideas, think harder — read papers referenced in the code, re-read the in-scope files for new angles, try combining previous near-misses, try more radical architectural changes. The loop runs until the human interrupts you, period.</p>
+<p>As an example use case, a user might leave you running while they sleep. If each experiment takes you ~5 minutes then you can run approx 12/hour, for a total of about 100 over the duration of the average human sleep. The user then wakes up to experimental results, all completed by you while they slept!</p></div>
+    </section>
+
+    <section>
+      <h2>3. program.md 主要讲了什么</h2>
+      <p><code>program.md</code> 把 autoresearch 定义成一个“自治研究员”的操作协议。它先要求建立独立实验分支、读取上下文文件、确认数据和结果日志，然后进入无限实验循环。</p>
+      <table>
+        <tr><th>主题</th><th>主要内容</th></tr>
+        <tr><td>初始化</td><td>约定 run tag、创建分支、读取 README / prepare.py / train.py、检查数据、初始化 results.tsv。</td></tr>
+        <tr><td>实验边界</td><td>只能修改 <code>train.py</code>，不能改 <code>prepare.py</code>、不能新增依赖、不能篡改评估函数。</td></tr>
+        <tr><td>优化目标</td><td>原版目标是降低 <code>val_bpb</code>。迁移到本案例后，实际日志使用 AUC，目标变为最大化 AUC。</td></tr>
+        <tr><td>记录格式</td><td>每次实验完成后写入 TSV，包括 commit、指标、状态和实验描述，方便后续复盘。</td></tr>
+        <tr><td>决策逻辑</td><td>如果指标刷新历史最好，则保留；否则丢弃并回到新的实验方向。强调简单性，避免为了微小收益引入复杂实现。</td></tr>
+        <tr><td>自治性</td><td>一旦开始循环，就持续尝试新想法，直到用户中断。</td></tr>
+      </table>
+      <div class="chart">
+        <svg viewBox="0 0 980 300" role="img" aria-label="program.md 描述的 autoresearch 流程">
+          <defs>
+            <marker id="arrowFlow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#617386"/></marker>
+            <linearGradient id="flowBox" x1="0" x2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eef8f6"/></linearGradient>
+          </defs>
+          <style>.flowbox{fill:url(#flowBox);stroke:#9fb1bf;stroke-width:1.5}.flowline{stroke:#617386;stroke-width:1.7;fill:none;marker-end:url(#arrowFlow)}.flowtext{font:14px sans-serif;fill:#243447;font-weight:600}.flowsub{font:12px sans-serif;fill:#627184}</style>
+          <rect class="flowbox" x="24" y="72" width="130" height="72" rx="8"/><text class="flowtext" x="55" y="102">初始化</text><text class="flowsub" x="42" y="126">分支 / 数据 / 日志</text>
+          <path class="flowline" d="M154 108 H210"/>
+          <rect class="flowbox" x="210" y="72" width="130" height="72" rx="8"/><text class="flowtext" x="242" y="102">读上下文</text><text class="flowsub" x="228" y="126">README / train.py</text>
+          <path class="flowline" d="M340 108 H396"/>
+          <rect class="flowbox" x="396" y="72" width="130" height="72" rx="8"/><text class="flowtext" x="428" y="102">提出想法</text><text class="flowsub" x="415" y="126">一次只改一处</text>
+          <path class="flowline" d="M526 108 H582"/>
+          <rect class="flowbox" x="582" y="72" width="130" height="72" rx="8"/><text class="flowtext" x="613" y="102">运行实验</text><text class="flowsub" x="604" y="126">固定预算训练</text>
+          <path class="flowline" d="M712 108 H768"/>
+          <rect class="flowbox" x="768" y="72" width="140" height="72" rx="8"/><text class="flowtext" x="806" y="102">记录指标</text><text class="flowsub" x="788" y="126">写入 results.tsv</text>
+          <path class="flowline" d="M838 144 V214 H468 V160"/>
+          <rect x="374" y="194" width="188" height="64" rx="8" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/><text class="flowtext" x="408" y="222">是否刷新最好值</text><text class="flowsub" x="400" y="244">keep / discard / crash</text>
+          <path class="flowline" d="M468 194 V160 H461 V144"/>
+          <text class="flowsub" x="392" y="184">回到提出想法继续迭代</text>
+        </svg>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. 数据样例</h2>
+      <p>本案例来自 Kaggle Playground Series S6E5：<strong>Predicting F1 Pit Stops</strong>。任务背景是根据 F1 比赛中的车手、轮胎、圈数、位置、圈速、轮胎寿命和比赛进度等逐圈记录，预测赛车是否会在下一圈进站。比赛页面：<code>https://www.kaggle.com/competitions/playground-series-s6e5/overview</code>。</p>
+      <p>本次 autoresearch 过程使用的模型是 <strong>GPT-5.4 Mini</strong>，围绕该 Kaggle 任务连续跑了 <strong>50 轮实验</strong>，总耗时约一个小时，并通过 <code>results.tsv</code> 记录每轮方案、验证分数和保留/丢弃决策。</p>
+      <p>下面仅展示训练集前 5 行作为字段形态参考。表格列数较多，已放入横向滚动容器，左右滑动即可查看完整字段。</p>
+      <h3>train.csv 前 5 行</h3>
+      <div class="scroll-table"><table class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>id</th><th>Driver</th><th>Compound</th><th>Race</th><th>Year</th><th>PitStop</th><th>LapNumber</th><th>Stint</th><th>TyreLife</th><th>Position</th><th>LapTime (s)</th><th>LapTime_Delta</th><th>Cumulative_Degradation</th><th>RaceProgress</th><th>Position_Change</th><th>PitNextLap</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>0</td><td>VER</td><td>MEDIUM</td><td>Bahrain Grand Prix</td><td>2022</td><td>0</td><td>1</td><td>1</td><td>1.0</td><td>2</td><td>97.464</td><td>0.000</td><td>0.000</td><td>0.017544</td><td>0.0</td><td>0</td></tr>
+    <tr><td>1</td><td>VER</td><td>MEDIUM</td><td>Bahrain Grand Prix</td><td>2022</td><td>0</td><td>2</td><td>1</td><td>2.0</td><td>2</td><td>96.191</td><td>-1.273</td><td>-1.273</td><td>0.035088</td><td>0.0</td><td>0</td></tr>
+    <tr><td>2</td><td>VER</td><td>MEDIUM</td><td>Bahrain Grand Prix</td><td>2022</td><td>0</td><td>3</td><td>1</td><td>3.0</td><td>2</td><td>95.545</td><td>-0.646</td><td>-1.919</td><td>0.052632</td><td>0.0</td><td>0</td></tr>
+    <tr><td>3</td><td>VER</td><td>MEDIUM</td><td>Bahrain Grand Prix</td><td>2022</td><td>0</td><td>4</td><td>1</td><td>4.0</td><td>2</td><td>95.199</td><td>-0.346</td><td>-2.265</td><td>0.070175</td><td>0.0</td><td>0</td></tr>
+    <tr><td>4</td><td>VER</td><td>MEDIUM</td><td>Bahrain Grand Prix</td><td>2022</td><td>0</td><td>5</td><td>1</td><td>5.0</td><td>2</td><td>94.986</td><td>-0.213</td><td>-2.478</td><td>0.087719</td><td>0.0</td><td>0</td></tr>
+  </tbody>
+</table></div>
+    </section>
+
+    <section>
+      <h2>5. 模型如何探索更优解</h2>
+      <p>这次探索的核心不是一次性找到答案，而是用 <code>results.tsv</code> 把每个想法变成可比较的实验点。模型从 LightGBM 基线出发，先做特征工程和树参数搜索，再切换到 XGBoost 独热编码路线，最后围绕深度、采样和正则强度做细调。</p>
+      <div class="metric-strip">
+        <div class="metric"><span>实验轮数</span><strong>50</strong></div>
+        <div class="metric"><span>保留方案</span><strong>14</strong></div>
+        <div class="metric"><span>丢弃方案</span><strong>40</strong></div>
+        <div class="metric"><span>AUC 提升</span><strong>+0.029652</strong></div>
+      </div>
+      <div class="phase-grid">
+        <div class="phase-card"><b>阶段 1：建立基线</b><strong>0.877233</strong><p>第 1 轮给出可比较起点。</p></div>
+        <div class="phase-card"><b>阶段 2：特征工程</b><strong>0.896481</strong><p>分箱、完整特征、年份类别和正则逐步刷新上限。</p></div>
+        <div class="phase-card"><b>阶段 3：切换模型族</b><strong>0.904235</strong><p>XGBoost + 独热编码带来最大跃迁。</p></div>
+        <div class="phase-card"><b>阶段 4：容量与正则</b><strong>0.906885</strong><p>超深强正则配置成为当前最优。</p></div>
+      </div>
+      <div class="chart">
+        <svg viewBox="0 0 980 430" role="img" aria-label="历史最好 AUC 刷新路径">
+          <defs>
+            <linearGradient id="aucLine" x1="0" x2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+            <filter id="softShadow"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#1f2937" flood-opacity="0.14"/></filter>
+          </defs>
+          <style>.band{fill:#eef6f8}.band2{fill:#f7f1ff}.axis{stroke:#617386;stroke-width:1.4}.gridline{stroke:#d8e1e8;stroke-width:1}.label{font:13px sans-serif;fill:#34495e}.tiny{font:11px sans-serif;fill:#607080}.pointText{font:12px sans-serif;fill:#17212b;font-weight:600}</style>
+          <rect x="70" y="38" width="190" height="292" class="band" rx="8"/><rect x="260" y="38" width="255" height="292" class="band2" rx="8"/><rect x="515" y="38" width="250" height="292" class="band" rx="8"/><rect x="765" y="38" width="140" height="292" class="band2" rx="8"/>
+          <text x="115" y="355" class="tiny">LGBM 基线</text><text x="324" y="355" class="tiny">特征与正则搜索</text><text x="590" y="355" class="tiny">XGBoost 跃迁</text><text x="785" y="355" class="tiny">深度正则细调</text>
+          <line x1="70" x2="930" y1="330" y2="330" class="axis"/><line x1="70" x2="70" y1="38" y2="330" class="axis"/>
+          <line x1="70" x2="930" y1="286" y2="286" class="gridline"/><line x1="70" x2="930" y1="214" y2="214" class="gridline"/><line x1="70" x2="930" y1="142" y2="142" class="gridline"/><line x1="70" x2="930" y1="70" y2="70" class="gridline"/>
+          <text x="22" y="334" class="tiny">0.875</text><text x="22" y="290" class="tiny">0.880</text><text x="22" y="218" class="tiny">0.890</text><text x="22" y="146" class="tiny">0.900</text><text x="22" y="74" class="tiny">0.910</text>
+          <polyline points="86,314 118,304 134,242 150,237 166,234 230,216 278,198 422,172 614,78 630,68 726,62 774,61 790,55 934,55" fill="none" stroke="url(#aucLine)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" filter="url(#softShadow)"/>
+          <g fill="#fff" stroke="#0f766e" stroke-width="3">
+            <circle cx="86" cy="314" r="7"/><circle cx="118" cy="304" r="7"/><circle cx="134" cy="242" r="7"/><circle cx="230" cy="216" r="7"/><circle cx="422" cy="172" r="7"/><circle cx="614" cy="78" r="7"/><circle cx="630" cy="68" r="7"/><circle cx="726" cy="62" r="7"/><circle cx="790" cy="55" r="8"/>
+          </g>
+          <text x="78" y="296" class="pointText">#1 0.8772</text><text x="128" y="226" class="pointText">#4 0.8871</text><text x="218" y="202" class="pointText">#10 0.8905</text><text x="398" y="158" class="pointText">#22 0.8965</text><text x="588" y="64" class="pointText">#34 0.9042</text><text x="704" y="47" class="pointText">#41 0.9060</text><text x="798" y="42" class="pointText">#45 0.9069</text>
+          <text x="70" y="24" class="label">历史最好 AUC 刷新路径</text><text x="820" y="382" class="tiny">实验轮次从左到右推进</text>
+        </svg>
+      </div>
+      <div class="grid">
+        <div class="chart">
+          <h3>关键方案对比</h3>
+          <svg viewBox="0 0 620 270" role="img" aria-label="关键方案 AUC 对比">
+            <style>.barLabel{font:13px sans-serif;fill:#243447}.barValue{font:12px sans-serif;fill:#0f766e;font-weight:700}</style>
+            <text x="18" y="36" class="barLabel">基线</text><rect x="135" y="20" width="360" height="24" rx="5" fill="#cbd5e1"/><text x="506" y="38" class="barValue">0.877233</text>
+            <text x="18" y="86" class="barLabel">完整特征</text><rect x="135" y="70" width="404" height="24" rx="5" fill="#93c5fd"/><text x="550" y="88" class="barValue">0.887052</text>
+            <text x="18" y="136" class="barLabel">年份类别</text><rect x="135" y="120" width="407" height="24" rx="5" fill="#60a5fa"/><text x="553" y="138" class="barValue">0.887654</text>
+            <text x="18" y="186" class="barLabel">特征工程高点</text><rect x="135" y="170" width="448" height="24" rx="5" fill="#38bdf8"/><text x="590" y="188" class="barValue">0.896481</text>
+            <text x="18" y="236" class="barLabel">XGB 最优</text><rect x="135" y="220" width="492" height="24" rx="5" fill="#0f766e"/><text x="500" y="260" class="barValue">0.906885</text>
+          </svg>
+        </div>
+        <div class="chart">
+          <h3>探索结论</h3>
+          <table>
+            <tr><th>动作</th><th>效果</th></tr>
+            <tr><td>从基础特征到完整特征</td><td>AUC 从 0.877233 提升到 0.887052。</td></tr>
+            <tr><td>加入年份类别和正则</td><td>继续推高到 0.896481，说明时间上下文有效。</td></tr>
+            <tr><td>切换到 XGBoost 独热编码</td><td>直接进入 0.904+ 区间，是最关键跃迁。</td></tr>
+            <tr><td>超深模型加强正则</td><td>最终达到 0.906885，同时避免明显过拟合。</td></tr>
+          </table>
+        </div>
+    </section>
+
+    <section>
+      <h2>6. 关键实验节点</h2>
+      <p>这一节按 <code>results.tsv</code> 的前 <strong>50</strong> 轮记录整理。下面先展示刷新历史最好 AUC 的节点，再给出前 50 轮完整实验日志，避免丢失 discard 和失败方向的信息。</p>
+      <h3>刷新历史最好值的实验</h3>
+      <div class="scroll-table"><table>
+        <tr><th>轮次</th><th>commit</th><th>AUC</th><th>状态</th><th>实验</th><th>最佳迭代</th><th>logloss</th><th>耗时</th></tr>
+        <tr><td>1</td><td>6c537cd</td><td>0.877233</td><td>keep</td><td>基线</td><td>21</td><td>0.443300</td><td>2.4s</td></tr>
+<tr><td>3</td><td>6c537cd</td><td>0.878523</td><td>keep</td><td>分箱特征</td><td>23</td><td>0.439691</td><td>4.3s</td></tr>
+<tr><td>4</td><td>6c537cd</td><td>0.887052</td><td>keep</td><td>完整特征</td><td>23</td><td>0.422771</td><td>6.4s</td></tr>
+<tr><td>5</td><td>6c537cd</td><td>0.887654</td><td>keep</td><td>年份类别</td><td>20</td><td>0.427922</td><td>5.7s</td></tr>
+<tr><td>6</td><td>6c537cd</td><td>0.888014</td><td>keep</td><td>深树</td><td>23</td><td>0.412719</td><td>9.3s</td></tr>
+<tr><td>10</td><td>6c537cd</td><td>0.890468</td><td>keep</td><td>强正则</td><td>24</td><td>0.421165</td><td>7.9s</td></tr>
+<tr><td>13</td><td>6c537cd</td><td>0.892994</td><td>keep</td><td>去掉交叉特征</td><td>25</td><td>0.429455</td><td>3.4s</td></tr>
+<tr><td>22</td><td>6c537cd</td><td>0.896481</td><td>keep</td><td>加回年份类别</td><td>20</td><td>0.431588</td><td>3.3s</td></tr>
+<tr><td>34</td><td>6c537cd</td><td>0.904235</td><td>keep</td><td>XGB独热基线</td><td>470</td><td>0.428614</td><td>23.2s</td></tr>
+<tr><td>35</td><td>6c537cd</td><td>0.905639</td><td>keep</td><td>XGB独热更深</td><td>368</td><td>0.416823</td><td>18.3s</td></tr>
+<tr><td>41</td><td>6c537cd</td><td>0.906049</td><td>keep</td><td>XGB独热重模型</td><td>403</td><td>0.408997</td><td>27.9s</td></tr>
+<tr><td>44</td><td>6c537cd</td><td>0.906075</td><td>keep</td><td>XGB超深模型</td><td>337</td><td>0.396041</td><td>32.2s</td></tr>
+<tr><td>45</td><td>6c537cd</td><td>0.906885</td><td>keep</td><td>XGB超深强正则</td><td>285</td><td>0.419457</td><td>24.1s</td></tr>
+      </table></div>
+      <h3>前 50 轮 results.tsv 记录</h3>
+      <div class="scroll-table vertical-scroll"><table>
+        <tr><th>轮次</th><th>commit</th><th>AUC</th><th>状态</th><th>实验</th><th>最佳迭代</th><th>logloss</th><th>耗时</th><th>原始描述</th></tr>
+        <tr><td>1</td><td>6c537cd</td><td>0.877233</td><td>keep</td><td>基线</td><td>21</td><td>0.443300</td><td>2.4s</td><td>base; best_iter=21; logloss=0.443300; fit=2.4s</td></tr>
+<tr><td>2</td><td>6c537cd</td><td>0.876920</td><td>discard</td><td>交叉特征</td><td>26</td><td>0.428813</td><td>5.2s</td><td>interactions; best_iter=26; logloss=0.428813; fit=5.2s</td></tr>
+<tr><td>3</td><td>6c537cd</td><td>0.878523</td><td>keep</td><td>分箱特征</td><td>23</td><td>0.439691</td><td>4.3s</td><td>buckets; best_iter=23; logloss=0.439691; fit=4.3s</td></tr>
+<tr><td>4</td><td>6c537cd</td><td>0.887052</td><td>keep</td><td>完整特征</td><td>23</td><td>0.422771</td><td>6.4s</td><td>full_features; best_iter=23; logloss=0.422771; fit=6.4s</td></tr>
+<tr><td>5</td><td>6c537cd</td><td>0.887654</td><td>keep</td><td>年份类别</td><td>20</td><td>0.427922</td><td>5.7s</td><td>year_category; best_iter=20; logloss=0.427922; fit=5.7s</td></tr>
+<tr><td>6</td><td>6c537cd</td><td>0.888014</td><td>keep</td><td>深树</td><td>23</td><td>0.412719</td><td>9.3s</td><td>deep_trees; best_iter=23; logloss=0.412719; fit=9.3s</td></tr>
+<tr><td>7</td><td>6c537cd</td><td>0.883851</td><td>discard</td><td>浅树</td><td>23</td><td>0.436710</td><td>4.5s</td><td>shallow_trees; best_iter=23; logloss=0.436710; fit=4.5s</td></tr>
+<tr><td>8</td><td>6c537cd</td><td>0.887568</td><td>discard</td><td>低学习率</td><td>39</td><td>0.424867</td><td>6.0s</td><td>low_lr; best_iter=39; logloss=0.424867; fit=6.0s</td></tr>
+<tr><td>9</td><td>6c537cd</td><td>0.887130</td><td>discard</td><td>高学习率</td><td>13</td><td>0.423780</td><td>5.7s</td><td>high_lr; best_iter=13; logloss=0.423780; fit=5.7s</td></tr>
+<tr><td>10</td><td>6c537cd</td><td>0.890468</td><td>keep</td><td>强正则</td><td>24</td><td>0.421165</td><td>7.9s</td><td>strong_regularization; best_iter=24; logloss=0.421165; fit=7.9s</td></tr>
+<tr><td>11</td><td>6c537cd</td><td>0.887052</td><td>discard</td><td>去掉年份类别</td><td>23</td><td>0.422771</td><td>5.8s</td><td>实验：去掉年份类别；最佳轮数=23；logloss=0.422771；耗时=5.8s</td></tr>
+<tr><td>12</td><td>6c537cd</td><td>0.888385</td><td>discard</td><td>去掉分桶</td><td>26</td><td>0.423432</td><td>5.8s</td><td>实验：去掉分桶；最佳轮数=26；logloss=0.423432；耗时=5.8s</td></tr>
+<tr><td>13</td><td>6c537cd</td><td>0.892994</td><td>keep</td><td>去掉交叉特征</td><td>25</td><td>0.429455</td><td>3.4s</td><td>实验：去掉交叉特征；最佳轮数=25；logloss=0.429455；耗时=3.4s</td></tr>
+<tr><td>14</td><td>6c537cd</td><td>0.887084</td><td>discard</td><td>更弱正则</td><td>23</td><td>0.423024</td><td>5.7s</td><td>实验：更弱正则；最佳轮数=23；logloss=0.423024；耗时=5.7s</td></tr>
+<tr><td>15</td><td>6c537cd</td><td>0.888014</td><td>discard</td><td>更大叶子</td><td>23</td><td>0.412719</td><td>7.7s</td><td>实验：更大叶子；最佳轮数=23；logloss=0.412719；耗时=7.7s</td></tr>
+<tr><td>16</td><td>6c537cd</td><td>0.883851</td><td>discard</td><td>更小叶子</td><td>23</td><td>0.436710</td><td>6.4s</td><td>实验：更小叶子；最佳轮数=23；logloss=0.436710；耗时=6.4s</td></tr>
+<tr><td>17</td><td>6c537cd</td><td>0.887568</td><td>discard</td><td>更低学习率</td><td>39</td><td>0.424867</td><td>6.5s</td><td>实验：更低学习率；最佳轮数=39；logloss=0.424867；耗时=6.5s</td></tr>
+<tr><td>18</td><td>6c537cd</td><td>0.887130</td><td>discard</td><td>更高学习率</td><td>13</td><td>0.423780</td><td>6.4s</td><td>实验：更高学习率；最佳轮数=13；logloss=0.423780；耗时=6.4s</td></tr>
+<tr><td>19</td><td>6c537cd</td><td>0.887052</td><td>discard</td><td>更多树</td><td>23</td><td>0.422771</td><td>5.8s</td><td>实验：更多树；最佳轮数=23；logloss=0.422771；耗时=5.8s</td></tr>
+<tr><td>20</td><td>6c537cd</td><td>0.887052</td><td>discard</td><td>更少树</td><td>23</td><td>0.422771</td><td>6.0s</td><td>实验：更少树；最佳轮数=23；logloss=0.422771；耗时=6.0s</td></tr>
+<tr><td>21</td><td>6c537cd</td><td>0.887052</td><td>discard</td><td>加回交叉特征</td><td>23</td><td>0.422771</td><td>6.1s</td><td>实验：加回交叉特征；最佳轮数=23；logloss=0.422771；耗时=6.1s</td></tr>
+<tr><td>22</td><td>6c537cd</td><td>0.896481</td><td>keep</td><td>加回年份类别</td><td>20</td><td>0.431588</td><td>3.3s</td><td>实验：加回年份类别；最佳轮数=20；logloss=0.431588；耗时=3.3s</td></tr>
+<tr><td>23</td><td>6c537cd</td><td>0.878523</td><td>discard</td><td>去掉数值派生</td><td>23</td><td>0.439691</td><td>2.9s</td><td>实验：去掉数值派生；最佳轮数=23；logloss=0.439691；耗时=2.9s</td></tr>
+<tr><td>24</td><td>6c537cd</td><td>0.893107</td><td>discard</td><td>更强正则二</td><td>22</td><td>0.433277</td><td>2.9s</td><td>实验：更强正则二；最佳轮数=22；logloss=0.433277；耗时=2.9s</td></tr>
+<tr><td>25</td><td>6c537cd</td><td>0.893711</td><td>discard</td><td>更弱正则二</td><td>25</td><td>0.430262</td><td>3.6s</td><td>实验：更弱正则二；最佳轮数=25；logloss=0.430262；耗时=3.6s</td></tr>
+<tr><td>26</td><td>6c537cd</td><td>0.895790</td><td>discard</td><td>更大叶子二</td><td>27</td><td>0.421410</td><td>4.8s</td><td>实验：更大叶子二；最佳轮数=27；logloss=0.421410；耗时=4.8s</td></tr>
+<tr><td>27</td><td>6c537cd</td><td>0.887840</td><td>discard</td><td>更小叶子二</td><td>23</td><td>0.442769</td><td>3.1s</td><td>实验：更小叶子二；最佳轮数=23；logloss=0.442769；耗时=3.1s</td></tr>
+<tr><td>28</td><td>6c537cd</td><td>0.893879</td><td>discard</td><td>更低学习率二</td><td>44</td><td>0.428717</td><td>3.6s</td><td>实验：更低学习率二；最佳轮数=44；logloss=0.428717；耗时=3.6s</td></tr>
+<tr><td>29</td><td>6c537cd</td><td>0.891010</td><td>discard</td><td>更高学习率二</td><td>11</td><td>0.434577</td><td>2.6s</td><td>实验：更高学习率二；最佳轮数=11；logloss=0.434577；耗时=2.6s</td></tr>
+<tr><td>30</td><td>6c537cd</td><td>0.877233</td><td>discard</td><td>只保留基础特征</td><td>21</td><td>0.443300</td><td>2.6s</td><td>实验：只保留基础特征；最佳轮数=21；logloss=0.443300；耗时=2.6s</td></tr>
+<tr><td>31</td><td>6c537cd</td><td>0.892463</td><td>discard</td><td>目标编码基线</td><td>21</td><td>0.430592</td><td>2.8s</td><td>实验：目标编码基线；最佳轮数=21；logloss=0.430592；耗时=2.8s</td></tr>
+<tr><td>32</td><td>6c537cd</td><td>0.892855</td><td>discard</td><td>目标编码+年份</td><td>21</td><td>0.431493</td><td>3.0s</td><td>实验：目标编码+年份；最佳轮数=21；logloss=0.431493；耗时=3.0s</td></tr>
+<tr><td>33</td><td>6c537cd</td><td>0.879642</td><td>discard</td><td>目标编码+交叉</td><td>19</td><td>0.442468</td><td>2.8s</td><td>实验：目标编码+交叉；最佳轮数=19；logloss=0.442468；耗时=2.8s</td></tr>
+<tr><td>34</td><td>6c537cd</td><td>0.904235</td><td>keep</td><td>XGB独热基线</td><td>470</td><td>0.428614</td><td>23.2s</td><td>实验：XGB独热基线；最佳轮数=470；logloss=0.428614；耗时=23.2s</td></tr>
+<tr><td>35</td><td>6c537cd</td><td>0.905639</td><td>keep</td><td>XGB独热更深</td><td>368</td><td>0.416823</td><td>18.3s</td><td>实验：XGB独热更深；最佳轮数=368；logloss=0.416823；耗时=18.3s</td></tr>
+<tr><td>36</td><td>6c537cd</td><td>0.904948</td><td>discard</td><td>XGB独热强正则</td><td>408</td><td>0.434560</td><td>17.5s</td><td>实验：XGB独热强正则；最佳轮数=408；logloss=0.434560；耗时=17.5s</td></tr>
+<tr><td>37</td><td>6c537cd</td><td>0.904657</td><td>discard</td><td>XGB独热加年份</td><td>364</td><td>0.408054</td><td>16.2s</td><td>实验：XGB独热加年份；最佳轮数=364；logloss=0.408054；耗时=16.2s</td></tr>
+<tr><td>38</td><td>6c537cd</td><td>0.904875</td><td>discard</td><td>XGB独热加交叉</td><td>335</td><td>0.443399</td><td>28.1s</td><td>实验：XGB独热加交叉；最佳轮数=335；logloss=0.443399；耗时=28.1s</td></tr>
+<tr><td>39</td><td>6c537cd</td><td>0.903608</td><td>discard</td><td>XGB独热+目标编码</td><td>235</td><td>0.439210</td><td>12.2s</td><td>实验：XGB独热+目标编码；最佳轮数=235；logloss=0.439210；耗时=12.2s</td></tr>
+<tr><td>40</td><td>6c537cd</td><td>0.903807</td><td>discard</td><td>XGB独热轻模型</td><td>367</td><td>0.451187</td><td>16.1s</td><td>实验：XGB独热轻模型；最佳轮数=367；logloss=0.451187；耗时=16.1s</td></tr>
+<tr><td>41</td><td>6c537cd</td><td>0.906049</td><td>keep</td><td>XGB独热重模型</td><td>403</td><td>0.408997</td><td>27.9s</td><td>实验：XGB独热重模型；最佳轮数=403；logloss=0.408997；耗时=27.9s</td></tr>
+<tr><td>42</td><td>6c537cd</td><td>0.879642</td><td>discard</td><td>目标编码+交叉</td><td>19</td><td>0.442468</td><td>3.3s</td><td>实验：目标编码+交叉；最佳轮数=19；logloss=0.442468；耗时=3.3s</td></tr>
+<tr><td>43</td><td>6c537cd</td><td>0.892855</td><td>discard</td><td>目标编码+年份</td><td>21</td><td>0.431493</td><td>3.0s</td><td>实验：目标编码+年份；最佳轮数=21；logloss=0.431493；耗时=3.0s</td></tr>
+<tr><td>44</td><td>6c537cd</td><td>0.906075</td><td>keep</td><td>XGB超深模型</td><td>337</td><td>0.396041</td><td>32.2s</td><td>实验：XGB超深模型；最佳轮数=337；logloss=0.396041；耗时=32.2s</td></tr>
+<tr><td>45</td><td>6c537cd</td><td>0.906885</td><td>keep</td><td>XGB超深强正则</td><td>285</td><td>0.419457</td><td>24.1s</td><td>实验：XGB超深强正则；最佳轮数=285；logloss=0.419457；耗时=24.1s</td></tr>
+<tr><td>46</td><td>6c537cd</td><td>0.905586</td><td>discard</td><td>XGB重采样</td><td>138</td><td>0.420371</td><td>13.4s</td><td>实验：XGB重采样；最佳轮数=138；logloss=0.420371；耗时=13.4s</td></tr>
+<tr><td>47</td><td>6c537cd</td><td>0.903021</td><td>discard</td><td>XGB目标编码重模型</td><td>279</td><td>0.419327</td><td>16.4s</td><td>实验：XGB目标编码重模型；最佳轮数=279；logloss=0.419327；耗时=16.4s</td></tr>
+<tr><td>48</td><td>6c537cd</td><td>0.892587</td><td>discard</td><td>XGB目标编码+交叉</td><td>261</td><td>0.389989</td><td>16.3s</td><td>实验：XGB目标编码+交叉；最佳轮数=261；logloss=0.389989；耗时=16.3s</td></tr>
+<tr><td>49</td><td>6c537cd</td><td>0.804911</td><td>discard</td><td>XGB目标编码+年份</td><td>1592</td><td>0.590773</td><td>62.2s</td><td>实验：XGB目标编码+年份；最佳轮数=1592；logloss=0.590773；耗时=62.2s</td></tr>
+<tr><td>50</td><td>6c537cd</td><td>0.882220</td><td>discard</td><td>XGB目标编码全开</td><td>6</td><td>0.589138</td><td>5.4s</td><td>实验：XGB目标编码全开；最佳轮数=6；logloss=0.589138；耗时=5.4s</td></tr>
+      </table></div>
+    </section>
+
+    <section>
+      <h2>7. 结果解读</h2>
+      <p>这条探索路线最重要的变化不是某一个单独超参数，而是模型族和特征表示方式的切换。早期 LightGBM 路线把本地验证 AUC 从 0.877233 推到 0.896481，说明基础特征工程已经有效；切换到 XGBoost 独热编码之后，AUC 迅速进入 0.904 以上，说明该任务对类别组合、非线性树结构和模型容量更敏感。</p>
+      <p class="note">最终本地验证最优方案是 XGB 相关实验，最高本地 AUC 为 <strong>0.906885</strong>。不过本地 AUC 与线上分数并不完全等价，原因可能包括年份切分和 Kaggle 隐藏测试集分布不同、概率校准差异、以及部分比赛或车手组合在测试集中更难泛化。</p>
+      <div class="metric-strip">
+        <div class="metric"><span>Kaggle 提交分数</span><strong>0.94771</strong></div>
+        <div class="metric"><span>当前榜单最优</span><strong>0.95480</strong></div>
+        <div class="metric"><span>差距</span><strong>0.00709</strong></div>
+      </div>
+      <p class="note">提交到 Kaggle 后获得的公开分数为 <strong>Score: 0.94771</strong>，目前榜单最优分数为 <strong>0.95480</strong>。这说明当前方案已经比较接近榜首，但仍有约 <strong>0.00709</strong> 的线上差距，后续优化应重点关注线上泛化，而不只是继续提高本地验证 AUC。</p>
+      <table>
+        <tr><th>观察点</th><th>结论</th></tr>
+        <tr><td>keep / discard</td><td>前 50 轮实验中，其中 13 轮保留、37 轮丢弃，说明探索过程不是线性爬坡，而是通过大量失败实验逐步收窄有效方向。</td></tr>
+        <tr><td>耗时</td><td>有记录的平均 fit 耗时约 5.7s。XGBoost 深模型耗时更高，但换来了最显著的 AUC 提升。</td></tr>
+      </table>
+    </section>
+    <section>
+      <h2>8. famou 平台结果对比</h2>
+      <p><code>output</code> 目录记录的是 famou 平台的一次演化实验，运行时间约 4 小时；该方案提交到 Kaggle 后得分为 <strong>0.94610</strong>。</p>
+      <div class="metric-strip">
+        <div class="metric"><span>famou Kaggle 分数</span><strong>0.94610</strong></div>
+        <div class="metric"><span>当前报告方案分数</span><strong>0.94771</strong></div>
+        <div class="metric"><span>当前榜单最优</span><strong>0.95480</strong></div>
+      </div>
+      <div class="chart">
+        <svg viewBox="0 0 780 210" role="img" aria-label="famou 与当前方案 Kaggle 分数对比">
+          <style>.cmpLabel{font:14px sans-serif;fill:#243447}.cmpValue{font:13px sans-serif;fill:#0f766e;font-weight:700}.cmpAxis{stroke:#d8e1e8;stroke-width:1}</style>
+          <line class="cmpAxis" x1="150" y1="170" x2="720" y2="170"/>
+          <text x="24" y="54" class="cmpLabel">famou 平台</text><rect x="150" y="36" width="538" height="26" rx="5" fill="#0f766e"/><text x="700" y="55" class="cmpValue">0.94610</text>
+          <text x="24" y="104" class="cmpLabel">当前报告方案</text><rect x="150" y="86" width="538" height="26" rx="5" fill="#14b8a6"/><text x="700" y="105" class="cmpValue">0.94771</text>
+          <text x="24" y="154" class="cmpLabel">榜单最优</text><rect x="150" y="136" width="548" height="26" rx="5" fill="#2563eb"/><text x="710" y="155" class="cmpValue">0.95480</text>
+        </svg>
+      </div>
+      <table>
+        <tr><th>对比项</th><th>famou 平台</th><th>当前报告方案</th></tr>
+        <tr><td>运行时间</td><td>约 4 小时</td><td>50 轮实验总耗时约 1 小时</td></tr>
+        <tr><td>模型路线</td><td>LightGBM，加入滚动圈速、滞后进站、累计进站、轮胎寿命和交互特征</td><td>XGBoost / LightGBM 路线中筛选出的高分配置</td></tr>
+        <tr><td>Kaggle 分数</td><td>0.94610</td><td>0.94771</td></tr>
+      </table>
+      <p class="note">对比来看，famou 平台虽然运行时间更长，但最终线上分数与当前报告方案非常接近但略低，说明它找到了另一条可行路线：通过时序滚动特征、进站滞后特征和 LightGBM 概率输出来达到相近效果。famou 分数为 <strong>0.94610</strong>，当前报告方案为 <strong>0.94771</strong>，差距约 <strong>0.00161</strong>。可能未继续超过当前方案的原因包括：使用随机 holdout 验证，可能不如年份外推验证稳定；搜索过程中较多时间花在复杂特征和较慢程序上，实际有效提升集中在少数节点；此外，最终分数已经接近榜单最优 0.95480，剩余差距可能需要更细的验证策略、融合或更贴近隐藏测试集分布的特征。</p>
+      <p class="note">需要注意的是，这里的对比有明显局限性：实验只覆盖了一个 Kaggle 项目，不能代表两种平台在其他任务上的整体表现；两边的实验迭代次数都不算高，搜索空间还没有被充分探索；同时也没有系统性地选择和比较更多模型家族，因此结论更适合作为本案例下的观察，而不是一般化评测。</p>
+    </section>
+  </main>
+  <footer>生成时间：2026-05-12 17:22:23；来源目录：E:\workspace\auto_research\autoresearch_local-master</footer>
+</body>
+</html>
