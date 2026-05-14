@@ -37,35 +37,86 @@ def your_function(train_df, test_df):
 
     model.fit(X_train, y_train)
     preds = model.predict(X_test)
+    preds_proba = model.predict_proba(X_test)[:, 1]
 
     submission_df = pd.DataFrame({
         "id": test_df["id"].values,
-        "PitNextLap": preds.astype(int)
+        "PitNextLap": preds.astype(int),
+        "PitNextLap_Prob": preds_proba,
     })
 
     return submission_df
 # EVOLVE-BLOCK-END
 
 
-def _run():
-    import pandas as pd
-    train_df = pd.read_csv("train.csv")
-    test_df = pd.read_csv("test.csv")
-    submission_df = your_function(train_df, test_df)
-    submission_df.to_csv("submission.csv", index=False)
-    print("预测完成，结果已保存为 submission.csv")
-    print(submission_df.head())
-    print(submission_df["PitNextLap"].value_counts())
-
-
 def main():
-    import multiprocessing as mp
-    p = mp.Process(target=_run)
-    p.start()
-    p.join(timeout=300)
-    if p.is_alive():
-        p.terminate()
-        print("超时：运行超过5分钟，已终止")
+    import os
+    import sys
+    import time
+    import pandas as pd
+    import numpy as np
+    import threading
+    from pathlib import Path
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import roc_auc_score
+
+    sys.stdout.reconfigure(line_buffering=True)
+    sys.stderr.reconfigure(line_buffering=True)
+
+    def _timeout_exit():
+        print("Training hit the 5-minute limit; exiting.", flush=True)
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os._exit(124)
+
+    timer = threading.Timer(300, _timeout_exit)
+    timer.daemon = True
+    timer.start()
+
+    t_total_start = time.time()
+
+    try:
+        data_dir = Path("data")
+        if not data_dir.exists():
+            data_dir = Path("data")
+
+        train_df = pd.read_csv(data_dir / "train.csv")
+        test_df = pd.read_csv(data_dir / "test.csv")
+
+        train_sub, val_df = train_test_split(
+            train_df, test_size=0.2, random_state=42, stratify=train_df["PitNextLap"]
+        )
+
+        t_train_start = time.time()
+        preds_df = your_function(train_sub, val_df)
+        t_train_end = time.time()
+
+        auc = roc_auc_score(val_df["PitNextLap"].values, preds_df["PitNextLap_Prob"].values)
+
+        peak_vram = 0.0
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["nvidia-smi", "--query-gpu=memory.used", "--format=csv,noheader,nounits"],
+                capture_output=True, text=True, timeout=5
+            )
+            lines = [l.strip() for l in result.stdout.strip().split("\n") if l.strip()]
+            if lines:
+                peak_vram = max(float(l) for l in lines)
+        except:
+            pass
+
+        training_seconds = t_train_end - t_train_start
+        total_seconds = time.time() - t_total_start
+
+        print("---")
+        print(f"AUC:          {auc:.6f}")
+        print(f"training_seconds: {training_seconds:.1f}")
+        print(f"total_seconds:    {total_seconds:.1f}")
+        print(f"peak_vram_mb:     {peak_vram:.1f}")
+
+    finally:
+        timer.cancel()
 
 
 if __name__ == "__main__":
