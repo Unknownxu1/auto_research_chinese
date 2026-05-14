@@ -161,3 +161,7 @@ c3d4e5f	auc	0.8010	discard	overfit with deeper trees
 - `program_ml.md`：autoresearch 实验流程说明，也是 Codex、OpenCode 等 agent 进行实验时必须优先读取并严格遵守的工作协议。
 - `autoresearch_usage_report.html`：对项目、数据样例、实验过程和结果的可视化说明。
 - `train.py`：主要可编辑入口，负责训练模型并生成预测结果。
+
+## 原项目
+
+<https://github.com/karpathy/autoresearch>
