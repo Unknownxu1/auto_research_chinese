@@ -6,7 +6,7 @@
 
 ## 项目背景
 
-本项目是基于 `autoresearch_local-master/README.md` 的思路改造而来。原始 `autoresearch` 项目的出发点是：给 AI 编程助手一个小而完整的机器学习训练环境，让它像自动研究员一样持续提出实验想法、修改 `train.py`、运行训练、读取指标，并根据结果决定保留还是丢弃改动。人类不再直接逐行调模型，而是通过 Markdown 说明文件定义实验规则、约束和目标，让 AI agent 在这些规则下自主迭代。
+本项目是基于 [karpathy 的 autoresearch](https://github.com/karpathy/autoresearch) 的思路改造而来。原始 `autoresearch` 项目的出发点是：给 AI 编程助手一个小而完整的机器学习训练环境，让它像自动研究员一样持续提出实验想法、修改 `train.py`、运行训练、读取指标，并根据结果决定保留还是丢弃改动。人类不再直接逐行调模型，而是通过 Markdown 说明文件定义实验规则、约束和目标，让 AI agent 在这些规则下自主迭代。
 
 原始项目更偏向单 GPU 训练场景，训练代码来自简化后的 nanochat 思路，关注模型结构、优化器、训练循环和固定训练时长内的验证指标表现。它的关键设计包括：
 
