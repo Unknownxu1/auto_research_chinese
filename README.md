@@ -83,21 +83,26 @@ id,PitNextLap
 pip install pandas numpy scikit-learn
 ```
 
-## 运行方式
+## 使用方式
 
-`train.py` 会从当前工作目录读取 `train.csv` 和 `test.csv`，并在当前工作目录写出 `submission.csv`。由于数据文件放在 `data/` 目录下，推荐从 `data/` 目录启动脚本：
+本项目不是让人手动按固定命令运行一次 `train.py`，而是把整个目录交给 Codex、OpenCode 或其他 AI 编程 agent，让 agent 读取 `program_ml.md`，并严格按照其中的实验协议执行自动化机器学习实验。
 
-```bash
-cd auto_research_chinese/data
-python ../train.py
+推荐使用方式：
+
+1. 在 Codex、OpenCode 等工具中打开本目录。
+2. 明确要求 agent 先读取 `program_ml.md`。
+3. 要求 agent 严格遵守 `program_ml.md` 中的原则、约束、实验循环和记录要求。
+4. 让 agent 围绕 `train.py` 进行实验，运行训练、比较指标、记录结果，并根据实验表现决定保留、丢弃或继续优化。
+
+可以直接给 agent 使用类似下面的指令：
+
+```text
+请先读取 program_ml.md，然后严格按照其中的说明进行机器学习实验。
+围绕 train.py 迭代模型、特征和参数，运行训练并记录每次实验结果。
+除非 program_ml.md 或用户明确允许，不要修改固定约束文件。
 ```
 
-Windows PowerShell 中也可以这样运行：
-
-```powershell
-Set-Location auto_research_chinese\data
-python ..\train.py
-```
+`train.py` 在运行时会从当前工作目录读取 `train.csv` 和 `test.csv`，并在当前工作目录写出 `submission.csv`。当前数据文件位于 `data/` 目录下，因此 agent 在需要执行训练时通常应从 `data/` 目录启动脚本。
 
 运行完成后会生成或覆盖：
 
@@ -153,6 +158,6 @@ c3d4e5f	auc	0.8010	discard	overfit with deeper trees
 
 ## 相关文件
 
-- `program_ml.md`：autoresearch 实验流程说明，但当前文件存在编码显示问题。
+- `program_ml.md`：autoresearch 实验流程说明，也是 Codex、OpenCode 等 agent 进行实验时必须优先读取并严格遵守的工作协议。
 - `autoresearch_usage_report.html`：对项目、数据样例、实验过程和结果的可视化说明。
 - `train.py`：主要可编辑入口，负责训练模型并生成预测结果。
